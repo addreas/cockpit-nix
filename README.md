@@ -15,7 +15,8 @@ Adding `module.nix` as an import, and `services.cockpit.enabled = true`  in `/et
 - [ ] packagekit
 - [ ] udisks2
 - [ ] selinux
-- [ ] cockpit-podman
-- [ ] cockpit-machines
+- [ ] cockpit-pcp (remove `--disable-pcp`, but first need to create package for https://github.com/performancecopilot/pcp)
+- [ ] cockpit-podman (subpackage https://github.com/cockpit-project/cockpit-podman/)
+- [ ] cockpit-machines (subpackage https://github.com/cockpit-project/cockpit-machines)
 - [ ] don't run as root?
 - [ ] nix flake
