@@ -1,0 +1,79 @@
+diff --git a/src/bridge/bridge.c b/src/bridge/bridge.c
+index c59ee2d04..0a2a2df07 100644
+--- a/src/bridge/bridge.c
++++ b/src/bridge/bridge.c
+@@ -353,7 +353,7 @@ run_bridge (const gchar *interactive,
+     }
+ 
+   /* Set a path if nothing is set */
+-  cockpit_setenv_check ("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", FALSE);
++  cockpit_setenv_check ("PATH", "@out@/bin:/run/wrappers/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin", FALSE);
+ 
+   /*
+    * The bridge always runs from within $XDG_RUNTIME_DIR
+diff --git a/src/bridge/org.cockpit-project.cockpit-bridge.policy.in b/src/bridge/org.cockpit-project.cockpit-bridge.policy.in
+index 8267f3b75..07afe563d 100644
+--- a/src/bridge/org.cockpit-project.cockpit-bridge.policy.in
++++ b/src/bridge/org.cockpit-project.cockpit-bridge.policy.in
+@@ -14,6 +14,6 @@
+             <allow_inactive>auth_admin</allow_inactive>
+             <allow_active>auth_admin</allow_active>
+         </defaults>
+-        <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/cockpit-bridge</annotate>
++        <annotate key="org.freedesktop.policykit.exec.path">@out@/bin/cockpit-bridge</annotate>
+     </action>
+ </policyconfig>
+diff --git a/src/pam-ssh-add/pam-ssh-add.c b/src/pam-ssh-add/pam-ssh-add.c
+index a9159d710..8a61459ea 100644
+--- a/src/pam-ssh-add/pam-ssh-add.c
++++ b/src/pam-ssh-add/pam-ssh-add.c
+@@ -56,7 +56,7 @@ const char *pam_ssh_add_arg = NULL;
+ 
+ /* Environment */
+ #define ENVIRON_SIZE 5
+-#define PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
++#define PATH "@out@/bin:@openssh@/bin:/run/wrappers/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"
+ 
+ /* ssh-agent output variables we care about */
+ static const char *agent_vars[] = {
+diff --git a/src/session/session-utils.h b/src/session/session-utils.h
+index 0838ad798..487cf904a 100644
+--- a/src/session/session-utils.h
++++ b/src/session/session-utils.h
+@@ -50,7 +50,7 @@
+ #endif
+ 
+ #define EX 127
+-#define DEFAULT_PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
++#define DEFAULT_PATH "@out@/bin:/run/wrappers/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"
+ 
+ extern const char *program_name;
+ extern struct passwd *pwd;
+diff --git a/src/systemd/cockpit.socket.in b/src/systemd/cockpit.socket.in
+index 97ca6b37c..e029e08a2 100644
+--- a/src/systemd/cockpit.socket.in
++++ b/src/systemd/cockpit.socket.in
+@@ -6,8 +6,8 @@ Wants=cockpit-motd.service
+ [Socket]
+ ListenStream=9090
+ ExecStartPost=-@datadir@/@PACKAGE@/motd/update-motd '' localhost
+-ExecStartPost=-/bin/ln -snf active.motd /run/cockpit/motd
+-ExecStopPost=-/bin/ln -snf inactive.motd /run/cockpit/motd
++ExecStartPost=-@coreutils@/bin/ln -snf active.motd /run/cockpit/motd
++ExecStopPost=-@coreutils@/bin/ln -snf inactive.motd /run/cockpit/motd
+ 
+ [Install]
+ WantedBy=sockets.target
+diff --git a/src/systemd/update-motd b/src/systemd/update-motd
+index 67e0fb630..dc2e942b7 100644
+--- a/src/systemd/update-motd
++++ b/src/systemd/update-motd
+@@ -6,7 +6,7 @@
+ # port number from cmdline, then systemctl file, then 9090
+ # take the last Listen line; this will be the user-specified one
+ port=${1:-$(systemctl show --property Listen cockpit.socket |
+-              sed -E '$!d;$s/.*[^0-9]([0-9]+).*/\1/;')}
++              @gnused@/bin/sed -E '$!d;$s/.*[^0-9]([0-9]+).*/\1/;')}
+ port=${port:-9090}
+ 
+ # hostname from cmdline, then `hostname -f`
